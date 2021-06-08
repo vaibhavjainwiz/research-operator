@@ -2,6 +2,8 @@
 VERSION ?= 0.0.1
 # Default bundle image tag
 BUNDLE_IMG ?= quay.io/vajain/research-operator-bundle:$(VERSION)
+# Default catalog image tag
+CATALOG_IMG ?= quay.io/vajain/research-operator-catalog:$(VERSION)
 # Options for 'bundle-build'
 ifneq ($(origin CHANNELS), undefined)
 BUNDLE_CHANNELS := --channels=$(CHANNELS)
@@ -121,3 +123,13 @@ bundle: manifests kustomize
 .PHONY: bundle-build
 bundle-build:
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+
+# Build the catalog image.
+.PHONY: catalog-build
+catalog-build:
+	opm index add -c docker --bundles $(BUNDLE_IMG) --tag $(CATALOG_IMG)
+
+# Push the catalog image.
+.PHONY: catalog-push
+catalog-push:
+	$(BUILDER) push ${CATALOG_IMG}
